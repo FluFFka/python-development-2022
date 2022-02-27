@@ -20,7 +20,6 @@ def inform(fmt: str, bulls: int, cows: int) -> None:
 def gameplay(ask: callable, inform: callable, words: list[str]) -> int:
     attempts = 0
     solution = choice(words)
-    words.remove(solution)
     while True:
         guess = ask("Input word: ", words)
         attempts += 1
