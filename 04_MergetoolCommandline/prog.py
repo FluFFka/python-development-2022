@@ -18,6 +18,7 @@ def print_name(generator, gender=gender_default, lang=lang_default):
 
 
 class repl(cmd.Cmd):
+    prompt = '> '
     def do_language(self, arg):
         args = shlex.split(arg, comments=True)
         if len(args) >= 1:
@@ -105,6 +106,45 @@ class repl(cmd.Cmd):
                 return ['male', 'female']
             return [s for s in ('male', 'female') if s.startswith(line[3])]
         return []
+
+    def do_info(self, arg):
+        args = shlex.split(arg, comments=True)
+        gens = pynames.generators.__all__
+        if len(args) >= 1:
+            if args[0] in gens:
+                gen_class = eval(f"pynames.generators.{args[0]}")
+                gen_subclass = []
+                for i in inspect.getmembers(gen_class):
+                    if not i[0].startswith('__') and not i[0] in exs:
+                        ds = ['Fullname', 'Generator', 'Names', 'Name']
+                        i = list(i)
+                        for d in ds:
+                            i[0] = i[0].replace(d, '')
+                        gen_subclass.append(i)
+                
+                if len(args) >= 2:
+                    arg2 = args[1]
+                    if arg2 in ('male', 'female'):
+                        arg2 = pynames.GENDER.MALE if arg2 == 'male' else pynames.GENDER.FEMALE
+                        print(gen_subclass[0][1]().get_names_number(arg2))
+                    elif arg2 == 'language':
+                        print(*gen_subclass[0][1]().languages)
+                    else:
+                        print('Command patter: info <class> [gender]\n\t\t Or: info <class> language')
+                else:
+                    print(gen_subclass[0][1]().get_names_number())
+            else:
+                print('Command patter: info <class> [gender]\n\t\t Or: info <class> language')
+        else:
+            print('Command patter: info <class> [gender]\n\t\t Or: info <class> language')
+
+
+    def complete_info(self, prefix, line, beg, end):
+        line = shlex.split(line, comments=True)
+        gens = pynames.generators.__all__
+        if len(line) == 3 or (len(line) == 2 and line[1] in gens):
+            return [s for s in ('male', 'female', 'language') if s.startswith(prefix)]
+        return [s for s in gens if s.startswith(prefix)]
 
     def do_exit(self, arg):
         return True
